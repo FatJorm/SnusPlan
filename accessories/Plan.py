@@ -1,4 +1,5 @@
 from datetime import date, time, datetime, timedelta
+import math
 import os
 import pickle
 
@@ -6,7 +7,8 @@ import pickle
 class Plan:
     def __init__(self):
         self.done = False
-        self._days_on_daily_dose = 21
+        self._days_on_daily_dose = 3
+        self._pace = 0.1
         self._bed_time = self._get_bed_time(date.today())
         self._wake_up_time = self._get_wake_up_time(date.today())
         self._plan_file = "plan.pkl"
@@ -91,8 +93,11 @@ class Plan:
         if not (self._state['days_left_on_current_dose'] == 0 and self._state['daily_dose'] == 0):
             self._state['days_left_on_current_dose'] -= 1
             if self._state['days_left_on_current_dose'] <= 0 and self._state['daily_dose'] > 0:
-                self._state['daily_dose'] -= 1
-                self._state['days_left_on_current_dose'] = self._days_on_daily_dose
+                self._state['daily_dose'] -= math.ceil(self._state['daily_dose'] * self._pace)
+                if self._state['daily_dose'] == 0:
+                    self._state['days_left_on_current_dose'] = 0
+                else:
+                    self._state['days_left_on_current_dose'] = int(self._days_on_daily_dose / (self._state['daily_dose']/24))
 
         self._state['date'] += timedelta(days=1)
         self._wake_up_time = self._get_wake_up_time(self._state['date'])
@@ -119,8 +124,8 @@ class Plan:
 
 if __name__ == '__main__':
     plan = Plan()
-    plan.setup(1)
+    plan.setup(6)
 
-    for i in range(150):
+    while not plan.done:
         plan.get_next()
         print(plan)
