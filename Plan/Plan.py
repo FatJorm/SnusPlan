@@ -11,7 +11,7 @@ class Plan:
         self._pace = 0.1
         self._bed_time = self._get_bed_time(date.today())
         self._wake_up_time = self._get_wake_up_time(date.today())
-        self._plan_file = "plan.pkl"
+        self._plan_file = "Data/plan.pkl"
         self._state = {"date": date.today(), "daily_dose": 0, "days_left_on_current_dose": 0, "day_plan": []}
         self._load_state()
 

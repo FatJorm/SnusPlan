@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/snus.iml" filepath="$PROJECT_DIR$/.idea/snus.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/snus_stopper.iml" filepath="$PROJECT_DIR$/.idea/snus_stopper.iml" />
     </modules>
   </component>
 </project>

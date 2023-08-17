@@ -8,7 +8,7 @@ from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.anchorlayout import AnchorLayout
 
-from accessories.Plan import Plan
+from Plan.Plan import Plan
 from datetime import datetime
 
 
