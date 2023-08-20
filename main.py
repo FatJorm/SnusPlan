@@ -7,15 +7,18 @@ from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.anchorlayout import AnchorLayout
 
-from Plan import Plan
-from datetime import datetime
+from Plan_New import MasterPlan
+from datetime import datetime, date
 
 
 # Set the desired window size
 # scale = 0.5
 # Window.size = (700*scale, 1280*scale)  # <-- For example, this sets the window size to 500x700 pixels.
 
-plan = Plan()
+start_date = date.today()
+bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=19, minute=0)
+wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=7, minute=0)
+plan = MasterPlan(start_date, 0, wake_up_time, wake_up_time, bedtime, bedtime)
 
 
 class Setup(FloatLayout):
@@ -30,7 +33,7 @@ class Setup(FloatLayout):
         cnt_label = Label(text="Current daily snus:", color=(1, 1, 1, 1), size_hint=(0.5, 1))
         horizontal_box.add_widget(cnt_label)
 
-        self.cnt_box = TextInput(text=str(plan._state['daily_dose']), multiline=False, size_hint=(0.1, 1))
+        self.cnt_box = TextInput(text=str(plan.get_current_dose()), multiline=False, size_hint=(0.1, 1))
         horizontal_box.add_widget(self.cnt_box)
 
         settings_box.add_widget(horizontal_box)
@@ -50,7 +53,9 @@ class Setup(FloatLayout):
         self.main_app.root_window()
 
     def push_btn(self, no_of_snus):
-        plan.setup(no_of_snus)
+        bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=19, minute=0)
+        wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=7, minute=0)
+        plan.update(int(self.cnt_box.text), wake_up_time, wake_up_time, bedtime, bedtime)
         self.main_app.root_window()
 
 
@@ -69,7 +74,7 @@ class MainWindow(FloatLayout):
         center_box.add_widget(self.main_btn)
 
         self.next_snus_label = Label(
-                                    text=f"Next snus: {plan.get_next_snus_time_string()}",
+                                    text=f"Next snus: {plan.get_next_time_string()}",
                                     color=(1, 1, 1, 1),
                                     size_hint=(1, 0.05),  # This ensures the Label takes up the full width of the BoxLayout
                                     halign='center',   # Horizontally centers the text inside the label
@@ -93,10 +98,9 @@ class MainWindow(FloatLayout):
 
     def time_for_next(self):
         now = datetime.now()
-        day_plan = plan._state['day_plan']
-        if day_plan:
-            next = day_plan[-1]
-            if now > next:
+        if not plan.is_done():
+            next_time = plan.get_next_time()
+            if now > next_time:
                 return True
             else:
                 return False
@@ -107,8 +111,8 @@ class MainWindow(FloatLayout):
         self.main_app.setup_window()
 
     def push_main_btn(self, instance):
-        plan.get_next()
-        self.next_snus_label.text = f"Next snus: {plan.get_next_snus_time_string()}"
+        plan.take_one()
+        self.next_snus_label.text = f"Next snus: {plan.get_next_time_string()}"
 
 class SnusManagerApp(App):
     def build(self):
