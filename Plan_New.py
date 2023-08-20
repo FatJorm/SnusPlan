@@ -1,11 +1,11 @@
-from datetime import date, time, datetime, timedelta
+from datetime import date, datetime, timedelta
 import os
 import pickle
 
 
 class Day:
-    def __init__(self, date, weekday, dose, wake_up_time, bed_time):
-        self.date = date
+    def __init__(self, current_date, weekday, dose, wake_up_time, bed_time):
+        self.date = current_date
         self.dose = dose
         self.wake_up_time = self._get_wake_up_time(wake_up_time)
         self.bed_time = self._get_bed_time(bed_time)
@@ -13,7 +13,6 @@ class Day:
         self.plan = self.get_plan()
 
     def get_next_string(self):
-        print(type(self.plan[-1]))
         return self.plan[-1].strftime("%d/%m %H:%M")
 
     def get_next(self):
