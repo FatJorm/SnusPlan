@@ -71,7 +71,7 @@ class Day:
                f"Plan: {self.plan})"
 
 
-class MasterPlan:
+class Plan:
     def __init__(self, start_date, start_dose, wake_up_time_weekday, wake_up_time_weekend, bedtime_weekday, bedtime_weekend):
         self._plan_file = "plan.pkl"
         self._start_date = start_date
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=19, minute=0)
     wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=7, minute=0)
 
-    plan = MasterPlan(start_date, dose, wake_up_time, wake_up_time, bedtime, bedtime)
+    plan = Plan(start_date, dose, wake_up_time, wake_up_time, bedtime, bedtime)
     print(plan)
     bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=21, minute=0)
     wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=9, minute=0)

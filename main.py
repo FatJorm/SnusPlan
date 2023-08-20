@@ -7,7 +7,7 @@ from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.anchorlayout import AnchorLayout
 
-from Plan_New import MasterPlan
+from Plan import Plan
 from datetime import datetime, date
 
 
@@ -18,7 +18,7 @@ from datetime import datetime, date
 start_date = date.today()
 bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=19, minute=0)
 wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=7, minute=0)
-plan = MasterPlan(start_date, 0, wake_up_time, wake_up_time, bedtime, bedtime)
+plan = Plan(start_date, 0, wake_up_time, wake_up_time, bedtime, bedtime)
 
 
 class Setup(FloatLayout):
@@ -55,7 +55,7 @@ class Setup(FloatLayout):
     def push_btn(self, no_of_snus):
         bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=19, minute=0)
         wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=7, minute=0)
-        plan.update(int(self.cnt_box.text), wake_up_time, wake_up_time, bedtime, bedtime)
+        plan.update(no_of_snus, wake_up_time, wake_up_time, bedtime, bedtime)
         self.main_app.root_window()
 
 
