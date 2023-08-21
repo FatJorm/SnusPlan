@@ -140,7 +140,7 @@ class Setup(FloatLayout):
         settings_box = AnchorLayout(anchor_x='center', anchor_y='top', size_hint=(0.8, 0.8), pos_hint={'top': 1})
 
         # Entries box
-        entries_box = BoxLayout(orientation='vertical', spacing=20, size_hint=(1, 0.5), pos_hint={'top': 1})
+        entries_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(1, 0.6), pos_hint={'top': 1})
 
         # Daily Dose
         daily_dose_box = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), pos_hint={'top': 1})
@@ -213,6 +213,13 @@ class Setup(FloatLayout):
 
         entries_box.add_widget(time_box)
 
+        # Update time button
+        update_time_btn_box = FloatLayout(size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0})
+        self.update_time_btn = Button(background_color=(32/255,32/255,32/255,1), color=(0, 1, 0, 1), text="Update Time", on_release=self.update_time, size_hint=(0.4, 1), pos_hint={'right': 1, 'y': 0})
+        update_time_btn_box.add_widget(self.update_time_btn)
+
+        entries_box.add_widget(update_time_btn_box)
+
         settings_box.add_widget(entries_box)
 
         self.add_widget(settings_box)
@@ -222,6 +229,8 @@ class Setup(FloatLayout):
         back_btn = Button(text="Back", on_release=self.back_btn_clicked, size_hint=(0.3, 1), pos_hint={'left': 1, 'y': 0}, background_color=(32/255,32/255,32/255,1))
         reset_btn = Button(color=(1, 0, 0, 1), text="Reset", on_release=self.reset_btn_clicked, size_hint=(0.3, 1), pos_hint={'center_x': 0.5, 'y': 0}, background_color=(32/255,32/255,32/255,1))
         self.ok_btn = Button(text="OK", on_release=self.push_btn, size_hint=(0.3, 1), pos_hint={'right': 1, 'y': 0}, background_color=(32/255,32/255,32/255,1))
+        if not self.plan.is_done():
+            self.ok_btn.disabled = True
 
         btn_layout.add_widget(back_btn)
         btn_layout.add_widget(reset_btn)
@@ -236,6 +245,18 @@ class Setup(FloatLayout):
         self.plan.reset()
         self.main_app.setup_window()
 
+    def update_time(self, instance):
+        start_date = datetime.today()
+        wake_up_time_weekdays_hour, wake_up_time_weekdays_minute = self.time_picker_wake_up_time_weekdays.get_time()
+        wake_up_time_weekends_hour, wake_up_time_weekends_minute = self.time_picker_wake_up_time_weekends.get_time()
+        bed_time_weekdays_hour, bed_time_weekdays_minute = self.time_picker_bed_time_weekdays.get_time()
+        bed_time_weekends_hour, bed_time_weekends_minute = self.time_picker_bed_time_weekends.get_time()
+        wake_up_time_weekday = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=wake_up_time_weekdays_hour, minute=wake_up_time_weekdays_minute)
+        wake_up_time_weekend = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=wake_up_time_weekends_hour, minute=wake_up_time_weekends_minute)
+        bed_time_weekday = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekdays_hour, minute=bed_time_weekdays_minute)
+        bed_time_weekend = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekends_hour, minute=bed_time_weekends_minute)
+        self.plan.update_wake_up_and_bed_time(wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend)
+        self.main_app.root_window()
 
     def push_btn(self, instance):
         start_date = date.today()
@@ -293,9 +314,11 @@ class MainWindow(FloatLayout):
         if self.time_for_next():
             self.main_btn.disabled = False
             self.main_btn.background_color = (0, 1, 0, 1)
+            self.next_snus_label.color = (0, 1, 0 ,1)
         else:
             self.main_btn.disabled = True
             self.main_btn.background_color = (1, 0, 0, 1)
+            self.next_snus_label.color = (1, 0, 0, 1)
 
     def time_for_next(self):
         now = datetime.now()

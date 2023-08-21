@@ -12,6 +12,32 @@ class Day:
         self.weekday = weekday
         self.plan = self.get_plan()
 
+    def set_new_time(self, wake_up_time_weekdays, wake_up_time_weekends, bed_time_weekdays, bed_time_weekends):
+        if self.weekday in ['Saturday', 'Sunday']:
+            self.wake_up_time = datetime(year=self.wake_up_time.year,
+                                         month=self.wake_up_time.month,
+                                         day=self.wake_up_time.day,
+                                         hour=wake_up_time_weekends.hour,
+                                         minute=wake_up_time_weekends.minute)
+            self.bed_time = datetime(year=self.bed_time.year,
+                                     month=self.bed_time.month,
+                                     day=self.bed_time.day,
+                                     hour=bed_time_weekends.hour,
+                                     minute=bed_time_weekends.minute)
+        else:
+            self.wake_up_time = datetime(year=self.wake_up_time.year,
+                                         month=self.wake_up_time.month,
+                                         day=self.wake_up_time.day,
+                                         hour=wake_up_time_weekdays.hour,
+                                         minute=wake_up_time_weekdays.minute)
+            self.bed_time = datetime(year=self.bed_time.year,
+                                     month=self.bed_time.month,
+                                     day=self.bed_time.day,
+                                     hour=bed_time_weekdays.hour,
+                                     minute=bed_time_weekdays.minute)
+        return Day(self.date, self. weekday, self.dose, self.wake_up_time, self.bed_time)
+
+
     def get_next_string(self):
         if self.is_done():
             return "--:--"
@@ -170,14 +196,17 @@ class Plan:
 
     def update_wake_up_and_bed_time(self, wake_up_time_weekday, wake_up_time_weekend, bedtime_weekday, bedtime_weekend):
         if self.get_current_dose() > 0:
+            new_plan = []
             self.wake_up_time_weekday = wake_up_time_weekday
             self.wake_up_time_weekend = wake_up_time_weekend
             self.bedtime_weekday = bedtime_weekday
             self.bedtime_weekend = bedtime_weekend
-            current_day = self._plan[-1]
-            self._start_date = current_day.date
-            self.start_dose = current_day.dose
-            self._plan = self._create_plan()
+            for day in self._plan:
+                new_plan.append(day.set_new_time(wake_up_time_weekday, wake_up_time_weekend, bedtime_weekday, bedtime_weekend))
+            self._plan = new_plan
+            self._save_plan(self._plan)
+            self._save_settings()
+
 
     def _get_master_plan(self):
         if os.path.isfile(self._plan_file):
@@ -282,7 +311,7 @@ if __name__ == '__main__':
     plan.update(dose, wake_up_time, wake_up_time, bedtime, bedtime)
     print(plan)
     bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=21, minute=0)
-    wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=9, minute=0)
-    plan.update(6, wake_up_time, wake_up_time, bedtime, bedtime)
+    wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=3, minute=0)
+    plan.update_wake_up_and_bed_time(wake_up_time, wake_up_time, bedtime, bedtime)
     print(plan)
-    plan.reset()
+
