@@ -122,6 +122,8 @@ class Plan:
         self.initial_days_in_plan = 0
         self._plan = []
         self._load()
+        if self.is_done:
+            self.new_day()
 
     def get_daily_plan(self):
         if self._plan:
