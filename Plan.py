@@ -100,6 +100,20 @@ class Plan:
         self._plan = []
         self._load()
 
+    def reset(self):
+        if os.path.isfile(self._plan_file):
+            os.remove(self._plan_file)
+        if os.path.isfile(self._settings_file):
+            os.remove(self._settings_file)
+        self._start_date = date.today()
+        self.start_dose = 12
+        self.wake_up_time_weekday = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=7, minute=0)
+        self.wake_up_time_weekend = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=8, minute=0)
+        self.bedtime_weekday = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=21, minute=0)
+        self.bedtime_weekend = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=22, minute=0)
+        self.initial_days_in_plan = 0
+        self._plan = []
+
 
     def _load(self):
         if(os.path.isfile(self._plan_file)):
@@ -111,10 +125,11 @@ class Plan:
         return self.wake_up_time_weekday.hour
 
     def take_one(self):
-        if self._plan[-1].is_done():
-            self._plan.pop()
-        else:
+        if self._plan:
             self._plan[-1].take_one()
+            if self._plan[-1].is_done():
+                self._plan.pop()
+            self._save_plan(self._plan)
 
     def get_next_time_string(self):
         if self.is_done():
@@ -135,7 +150,10 @@ class Plan:
             return 0
 
     def get_end_date(self):
-        return self._plan[0].date
+        if self._plan:
+            return self._plan[0].date.strftime('%y-%m-%d')
+        else:
+            return "--:--:--"
 
     def is_done(self):
         return False if self._plan else True
@@ -267,3 +285,4 @@ if __name__ == '__main__':
     wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=9, minute=0)
     plan.update(6, wake_up_time, wake_up_time, bedtime, bedtime)
     print(plan)
+    plan.reset()

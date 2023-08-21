@@ -1,7 +1,6 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
@@ -11,6 +10,7 @@ from kivy.uix.spinner import Spinner
 from kivy.properties import NumericProperty
 from kivy.factory import Factory
 from kivy.uix.spinner import SpinnerOption
+from kivy.uix.progressbar import ProgressBar
 import time
 
 
@@ -21,8 +21,6 @@ from datetime import datetime, date
 # Set the desired window size
 scale = 0.5
 Window.size = (700*scale, 1280*scale)  # <-- For example, this sets the window size to 500x700 pixels.
-
-plan = Plan()
 
 
 class CustomSpinnerOption(SpinnerOption):
@@ -134,8 +132,9 @@ class Setup(FloatLayout):
     def __init__(self, main_app, **kwargs):
         super().__init__(**kwargs)
         self.main_app = main_app
-        self.daily_dose_current_value = plan.get_current_dose()
-        self.wake_up_time_weekdays = plan .get_current_wake_up_time_weekday()
+        self.plan = main_app.plan
+        self.daily_dose_current_value = self.plan.get_current_dose()
+        self.wake_up_time_weekdays = self.plan .get_current_wake_up_time_weekday()
 
         # Settings Box
         settings_box = AnchorLayout(anchor_x='center', anchor_y='top', size_hint=(0.8, 0.8), pos_hint={'top': 1})
@@ -146,10 +145,10 @@ class Setup(FloatLayout):
         # Daily Dose
         daily_dose_box = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), pos_hint={'top': 1})
 
-        self.dose_label = Label(text="Current daily dose:", size_hint=(0.7, 0.1))
+        self.dose_label = Label(text="Current daily dose:", size_hint=(0.15, 0.1))
         daily_dose_box.add_widget(self.dose_label)
 
-        self.dose_picker = DosePicker(dose=plan.start_dose, size_hint=(0.1, 0.1))
+        self.dose_picker = DosePicker(dose=self.plan.start_dose, size_hint=(0.05, 0.1))
         daily_dose_box.add_widget(self.dose_picker)
 
         entries_box.add_widget(daily_dose_box)
@@ -169,7 +168,7 @@ class Setup(FloatLayout):
         wake_up_time_weekdays_label = Label(text="Weekdays:", size_hint=(0.5, 1))
         wake_up_time_weekdays_box.add_widget(wake_up_time_weekdays_label)
 
-        self.time_picker_wake_up_time_weekdays = TimePicker(time=plan.wake_up_time_weekday, size_hint=(0.3, 0.1))
+        self.time_picker_wake_up_time_weekdays = TimePicker(time=self.plan.wake_up_time_weekday, size_hint=(0.3, 0.1))
         wake_up_time_weekdays_box.add_widget(self.time_picker_wake_up_time_weekdays)
 
         time_box.add_widget(wake_up_time_weekdays_box)
@@ -179,7 +178,7 @@ class Setup(FloatLayout):
         wake_up_time_weekends_label = Label(text="Weekends:", size_hint=(0.5, 1))
         wake_up_time_weekends_box.add_widget(wake_up_time_weekends_label)
 
-        self.time_picker_wake_up_time_weekends = TimePicker(time=plan.wake_up_time_weekend, size_hint=(0.3, 0.1))
+        self.time_picker_wake_up_time_weekends = TimePicker(time=self.plan.wake_up_time_weekend, size_hint=(0.3, 0.1))
         wake_up_time_weekends_box.add_widget(self.time_picker_wake_up_time_weekends)
 
         time_box.add_widget(wake_up_time_weekends_box)
@@ -197,7 +196,7 @@ class Setup(FloatLayout):
         bed_time_weekdays_label = Label(text="Weekdays:", size_hint=(0.5, 1))
         bed_time_weekdays_box.add_widget(bed_time_weekdays_label)
 
-        self.time_picker_bed_time_weekdays = TimePicker(time=plan.bedtime_weekday, size_hint=(0.3, 0.1))
+        self.time_picker_bed_time_weekdays = TimePicker(time=self.plan.bedtime_weekday, size_hint=(0.3, 0.1))
         bed_time_weekdays_box.add_widget(self.time_picker_bed_time_weekdays)
 
         time_box.add_widget(bed_time_weekdays_box)
@@ -207,7 +206,7 @@ class Setup(FloatLayout):
         bed_time_weekends_label = Label(text="Weekends:", size_hint=(0.5, 1))
         bed_time_weekends_box.add_widget(bed_time_weekends_label)
 
-        self.time_picker_bed_time_weekends = TimePicker(plan.bedtime_weekend, size_hint=(0.3, 0.1))
+        self.time_picker_bed_time_weekends = TimePicker(self.plan.bedtime_weekend, size_hint=(0.3, 0.1))
         bed_time_weekends_box.add_widget(self.time_picker_bed_time_weekends)
 
         time_box.add_widget(bed_time_weekends_box)
@@ -220,16 +219,23 @@ class Setup(FloatLayout):
 
         # OK and Back Buttons
         btn_layout = FloatLayout(size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0})
-        back_btn = Button(text="Back", on_release=self.back_btn_clicked, size_hint=(0.3, 1), pos_hint={'left': 1, 'y': 0})
-        self.ok_btn = Button(text="OK", on_release=self.push_btn, size_hint=(0.3, 1), pos_hint={'right': 1, 'y': 0})
+        back_btn = Button(text="Back", on_release=self.back_btn_clicked, size_hint=(0.3, 1), pos_hint={'left': 1, 'y': 0}, background_color=(32/255,32/255,32/255,1))
+        reset_btn = Button(color=(1, 0, 0, 1), text="Reset", on_release=self.reset_btn_clicked, size_hint=(0.3, 1), pos_hint={'center_x': 0.5, 'y': 0}, background_color=(32/255,32/255,32/255,1))
+        self.ok_btn = Button(text="OK", on_release=self.push_btn, size_hint=(0.3, 1), pos_hint={'right': 1, 'y': 0}, background_color=(32/255,32/255,32/255,1))
 
         btn_layout.add_widget(back_btn)
+        btn_layout.add_widget(reset_btn)
         btn_layout.add_widget(self.ok_btn)
 
         self.add_widget(btn_layout)
 
     def back_btn_clicked(self, instance):
         self.main_app.root_window()
+
+    def reset_btn_clicked(self, instance):
+        self.plan.reset()
+        self.main_app.setup_window()
+
 
     def push_btn(self, instance):
         start_date = date.today()
@@ -241,9 +247,7 @@ class Setup(FloatLayout):
         wake_up_time_weekend = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=wake_up_time_weekends_hour, minute=wake_up_time_weekends_minute)
         bed_time_weekday = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekdays_hour, minute=bed_time_weekdays_minute)
         bed_time_weekend = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekends_hour, minute=bed_time_weekends_minute)
-        plan.update(self.dose_picker.get_dose(), wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend)
-        while plan.is_done():
-            time.sleep(1)
+        self.plan.update(self.dose_picker.get_dose(), wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend)
         self.main_app.root_window()
 
 
@@ -251,9 +255,14 @@ class MainWindow(FloatLayout):
     def __init__(self, main_app, **kwargs):
         super().__init__(**kwargs)
         self.main_app = main_app
+        self.plan = main_app.plan
+
+        # Label in the top left corner
+        end_date_label = Label(text=f"End Date: {self.plan.get_end_date()}", size_hint=(0.5, 0.1), pos_hint={'left': 1, 'top': 1})
+        self.add_widget(end_date_label)
 
         # Setup button in the top right corner
-        setup_btn = Button(text="Setup", on_release=self.push_setup_btn, size_hint=(0.3, 0.1), pos_hint={'right': 1, 'top': 1})
+        setup_btn = Button(color=(1,0,0,1) ,text="Setup", on_release=self.push_setup_btn, size_hint=(0.3, 0.1), pos_hint={'right': 1, 'top': 1}, background_color=(32/255,32/255,32/255,1))
         self.add_widget(setup_btn)
 
         # Center container for main_btn and next_snus_label
@@ -262,8 +271,8 @@ class MainWindow(FloatLayout):
         center_box.add_widget(self.main_btn)
 
         self.next_snus_label = Label(
-                                    text=f"Next snus: {plan.get_next_time_string()}",
-                                    color=(1, 1, 1, 1),
+                                    text=f"Next snus: {self.plan.get_next_time_string()}",
+                                    color=(0, 1, 0, 1),
                                     size_hint=(1, 0.05),  # This ensures the Label takes up the full width of the BoxLayout
                                     halign='center',   # Horizontally centers the text inside the label
                                     valign='center',   # Vertically centers the text inside the label
@@ -272,6 +281,10 @@ class MainWindow(FloatLayout):
         center_box.add_widget(self.next_snus_label)
 
         self.add_widget(center_box)
+
+        self.progress = ProgressBar(max=100, size_hint=(0.8, 0.1), pos_hint={'center_x': 0.5, 'y': 0.2})
+        self.add_widget(self.progress)
+        self.progress_event = Clock.schedule_interval(self.update_progress, 1)
 
         self.update_main_button()
         self._event = Clock.schedule_interval(self.update_main_button, 1)
@@ -286,8 +299,8 @@ class MainWindow(FloatLayout):
 
     def time_for_next(self):
         now = datetime.now()
-        if not plan.is_done():
-            next_time = plan.get_next_time()
+        if not self.plan.is_done():
+            next_time = self.plan.get_next_time()
             if next_time and now > next_time:
                 return True
             else:
@@ -299,10 +312,21 @@ class MainWindow(FloatLayout):
         self.main_app.setup_window()
 
     def push_main_btn(self, instance):
-        plan.take_one()
-        self.next_snus_label.text = f"Next snus: {plan.get_next_time_string()}"
+        self.plan.take_one()
+        self.next_snus_label.text = f"Next snus: {self.plan.get_next_time_string()}"
+
+    def update_progress(self, dt):
+        if self.plan.initial_days_in_plan:
+            self.progress.value = int((self.plan.get_current_day()/self.plan.initial_days_in_plan*self.plan.initial_days_in_plan))
+        else:
+            self.progress.value = 0
+
 
 class SnusManagerApp(App):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.plan = Plan()
+
     def build(self):
         self.title = 'Snus Manager'
         return MainWindow(main_app=self)
