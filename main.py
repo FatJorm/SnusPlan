@@ -267,6 +267,8 @@ class Setup(FloatLayout):
         bed_time_weekday = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekdays_hour, minute=bed_time_weekdays_minute)
         bed_time_weekend = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekends_hour, minute=bed_time_weekends_minute)
         self.plan.update(self.dose_picker.get_dose(), wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend)
+        if self.plan.is_done:
+            self.plan.new_day()
         self.main_app.root_window()
 
 
@@ -285,7 +287,7 @@ class MainWindow(FloatLayout):
         self.add_widget(setup_btn)
 
         # Center container for main_btn and next_snus_label
-        center_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(0.5, 0.2), pos_hint={'center_x': 0.5, 'center_y': 0.5})
+        center_box = BoxLayout(orientation='vertical', spacing=40, size_hint=(0.5, 0.2), pos_hint={'center_x': 0.5, 'center_y': 0.7})
         self.main_btn = Button(text="SNUS", on_release=self.push_main_btn, size_hint=(1, 0.95))
         center_box.add_widget(self.main_btn)
 
@@ -301,7 +303,30 @@ class MainWindow(FloatLayout):
 
         self.add_widget(center_box)
 
-        self.progress = ProgressBar(max=100, size_hint=(0.8, 0.1), pos_hint={'center_x': 0.5, 'y': 0.2})
+        # Daily plan
+        daily_plan_vertical_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(1, 0.25), pos_hint={'center_x': 0.5, 'center_y': 0.325})
+        daily_plan_horizontal_box = BoxLayout(orientation='horizontal', spacing=0, size_hint=(None, 1), pos_hint={'center_x': 0.1})
+        i = 0
+
+        for current_time in self.plan.get_daily_plan():
+            if i % 5 == 0 and i != 0:  # Make sure you don't add an empty box at the start
+                daily_plan_vertical_box.add_widget(daily_plan_horizontal_box)
+                daily_plan_horizontal_box = BoxLayout(orientation='horizontal', size_hint=(None, 1), pos_hint={'center_x': 0.1})
+
+            time_label = Label(text=f"{current_time.strftime('%H:%M')}", size_hint=(None, 0.2))
+            if self.is_passed(current_time):
+                time_label.color = (0, 1, 0, 1)
+            else:
+                time_label.color = (1, 0, 0, 1)
+            daily_plan_horizontal_box.add_widget(time_label)
+            i += 1
+
+        # Add the last horizontal box
+        daily_plan_vertical_box.add_widget(daily_plan_horizontal_box)
+        self.add_widget(daily_plan_vertical_box)
+
+        # Progress bar
+        self.progress = ProgressBar(max=100, size_hint=(0.8, 0.15), pos_hint={'center_x': 0.5, 'y': 0})
         self.add_widget(self.progress)
         self.progress_event = Clock.schedule_interval(self.update_progress, 1)
 
@@ -312,7 +337,7 @@ class MainWindow(FloatLayout):
         if self.time_for_next():
             self.main_btn.disabled = False
             self.main_btn.background_color = (0, 1, 0, 1)
-            self.next_snus_label.color = (0, 1, 0 ,1)
+            self.next_snus_label.color = (0, 1, 0, 1)
         else:
             self.main_btn.disabled = True
             self.main_btn.background_color = (1, 0, 0, 1)
@@ -335,12 +360,20 @@ class MainWindow(FloatLayout):
     def push_main_btn(self, instance):
         self.plan.take_one()
         self.next_snus_label.text = f"Next snus: {self.plan.get_next_time_string()}"
+        self.main_app.root_window()
 
     def update_progress(self, dt):
         if self.plan.initial_days_in_plan:
             self.progress.value = int((self.plan.get_current_day()/self.plan.initial_days_in_plan*self.plan.initial_days_in_plan))
         else:
             self.progress.value = 0
+
+    @staticmethod
+    def is_passed(time):
+        if time < datetime.now():
+            return True
+        else:
+            return False
 
 
 class SnusManagerApp(App):

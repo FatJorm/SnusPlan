@@ -37,7 +37,6 @@ class Day:
                                      minute=bed_time_weekdays.minute)
         return Day(self.date, self. weekday, self.dose, self.wake_up_time, self.bed_time)
 
-
     def get_next_string(self):
         if self.is_done():
             return "--:--"
@@ -89,8 +88,6 @@ class Day:
         else:
             return day_in_min
 
-
-
     def is_done(self):
         return False if self.plan else True
 
@@ -126,6 +123,12 @@ class Plan:
         self._plan = []
         self._load()
 
+    def get_daily_plan(self):
+        if self._plan:
+            return self._plan[-1].plan
+        else:
+            return []
+
     def reset(self):
         if os.path.isfile(self._plan_file):
             os.remove(self._plan_file)
@@ -140,6 +143,10 @@ class Plan:
         self.initial_days_in_plan = 0
         self._plan = []
 
+
+    def new_day(self):
+        if self._plan:
+            self._plan.pop()
 
     def _load(self):
         if(os.path.isfile(self._plan_file)):
@@ -206,7 +213,6 @@ class Plan:
             self._plan = new_plan
             self._save_plan(self._plan)
             self._save_settings()
-
 
     def _get_master_plan(self):
         if os.path.isfile(self._plan_file):
