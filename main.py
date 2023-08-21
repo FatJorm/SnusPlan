@@ -11,8 +11,6 @@ from kivy.properties import NumericProperty
 from kivy.factory import Factory
 from kivy.uix.spinner import SpinnerOption
 from kivy.uix.progressbar import ProgressBar
-import time
-
 
 from Plan import Plan, Day
 from datetime import datetime, date
