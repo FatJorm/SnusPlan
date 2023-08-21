@@ -13,10 +13,16 @@ class Day:
         self.plan = self.get_plan()
 
     def get_next_string(self):
-        return self.plan[-1].strftime("%d/%m %H:%M")
+        if self.is_done():
+            return "--:--"
+        else:
+            return self.plan[-1].strftime("%d/%m %H:%M")
 
     def get_next(self):
-        return self.plan[-1]
+        if self.is_done():
+            return None
+        else:
+            return self.plan[-1]
 
     def take_one(self):
         self.plan.pop()
@@ -72,15 +78,19 @@ class Day:
 
 
 class Plan:
-    def __init__(self, start_date, start_dose, wake_up_time_weekday, wake_up_time_weekend, bedtime_weekday, bedtime_weekend):
+    def __init__(self):
         self._plan_file = "plan.pkl"
-        self._start_date = start_date
-        self._start_dose = start_dose
-        self._wake_up_time_weekday = wake_up_time_weekday
-        self._wake_up_time_weekend = wake_up_time_weekend
-        self._bedtime_weekday = bedtime_weekday
-        self._bedtime_weekend = bedtime_weekend
-        self._plan = self._get_master_plan()
+        self._time_file = "time.pkl"
+        self._start_date = date.today()
+        self.start_dose = 12
+        self.wake_up_time_weekday = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=7, minute=0)
+        self.wake_up_time_weekend = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=8, minute=0)
+        self.bedtime_weekday = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=21, minute=0)
+        self.bedtime_weekend = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=22, minute=0)
+        self._plan = []
+
+    def get_current_wake_up_time_weekday(self):
+        return self.wake_up_time_weekday.hour
 
     def take_one(self):
         if self._plan[-1].is_done():
@@ -114,24 +124,28 @@ class Plan:
 
     def update(self, dose, wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend):
         if dose > 0:
-            self._wake_up_time_weekday = wake_up_time_weekday
-            self._wake_up_time_weekend = wake_up_time_weekend
+            self.wake_up_time_weekday = wake_up_time_weekday
+            self.wake_up_time_weekend = wake_up_time_weekend
             self._bed_time_weekday = bed_time_weekday
             self._bed_time_weekend = bed_time_weekend
             self._start_date = date.today()
-            self._start_dose = dose
+            self.start_dose = dose
             self._plan = self._create_plan()
 
-    def _update_wake_up_and_bed_time(self, wake_up_time_weekday, wake_up_time_weekend, bedtime_weekday, bedtime_weekend):
+    def update_wake_up_and_bed_time(self, wake_up_time_weekday, wake_up_time_weekend, bedtime_weekday, bedtime_weekend):
         if self.get_current_dose() > 0:
-            self._wake_up_time_weekday = wake_up_time_weekday
-            self._wake_up_time_weekend = wake_up_time_weekend
-            self._bedtime_weekday = bedtime_weekday
-            self._bedtime_weekend = bedtime_weekend
+            self.wake_up_time_weekday = wake_up_time_weekday
+            self.wake_up_time_weekend = wake_up_time_weekend
+            self.bedtime_weekday = bedtime_weekday
+            self.bedtime_weekend = bedtime_weekend
             current_day = self._plan[-1]
             self._start_date = current_day.date
-            self._start_dose = current_day.dose
+            self.start_dose = current_day.dose
             self._plan = self._create_plan()
+
+    def _get_time(self):
+        if os.path.isfile(self._time_file):
+            self.wake_up_time_weekday, self.wake_up_time_weekend, self.bedtime_weekday, self.bedtime_weekend = self._load_time()
 
     def _get_master_plan(self):
         if os.path.isfile(self._plan_file):
@@ -143,7 +157,7 @@ class Plan:
 
     def _create_plan(self):
         current_date = self._start_date
-        current_dose = self._start_dose
+        current_dose = self.start_dose
         days_left_on_dose = self._get_days_left_on_dose(current_dose)
         new_plan = []
         if current_dose > 0:
@@ -162,6 +176,7 @@ class Plan:
                         days_left_on_dose = self._get_days_left_on_dose(current_dose)
         new_plan.reverse()
         self._save_plan(new_plan)
+        self._save_time()
         return new_plan
 
     @staticmethod
@@ -174,16 +189,16 @@ class Plan:
     def _get_wake_up_time(self, current_date):
         day = self._get_weekday(current_date)
         if day in ['Saturday', 'Sunday']:
-            return self._wake_up_time_weekend
+            return self.wake_up_time_weekend
         else:
-            return self._wake_up_time_weekday
+            return self.wake_up_time_weekday
 
     def _get_bedtime(self, current_date):
         day = self._get_weekday(current_date)
         if day in ['Saturday', 'Sunday']:
-            return self._bedtime_weekend
+            return self.bedtime_weekend
         else:
-            return self._bedtime_weekday
+            return self.bedtime_weekday
 
     @staticmethod
     def _get_weekday(current_date):
@@ -199,6 +214,16 @@ class Plan:
             with open(self._plan_file, 'rb') as f:
                 return pickle.load(f)
 
+    def _save_time(self):
+        time = [self.wake_up_time_weekday, self.wake_up_time_weekend, self.bedtime_weekday, self.bedtime_weekend]
+        with open(self._time_file, 'wb') as f:
+            pickle.dump(time, f)
+
+    def _load_time(self):
+        if os.path.isfile(self._time_file):
+            with open(self._time_file, 'rb') as f:
+                return pickle.load(f)
+
     def __str__(self):
         str = "["
         for day in self._plan:
@@ -208,7 +233,7 @@ class Plan:
 
 if __name__ == '__main__':
     start_date = date.today()
-    dose = 0
+    dose = 7
     bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=19, minute=0)
     wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=7, minute=0)
 
@@ -216,5 +241,5 @@ if __name__ == '__main__':
     print(plan)
     bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=21, minute=0)
     wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=9, minute=0)
-    plan._update_wake_up_and_bed_time(wake_up_time, wake_up_time, bedtime, bedtime)
+    plan.update(6, wake_up_time, wake_up_time, bedtime, bedtime)
     print(plan)
