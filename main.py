@@ -166,7 +166,7 @@ class Setup(FloatLayout):
         wake_up_time_weekdays_label = Label(text="Weekdays:", size_hint=(0.5, 1))
         wake_up_time_weekdays_box.add_widget(wake_up_time_weekdays_label)
 
-        self.time_picker_wake_up_time_weekdays = TimePicker(time=self.plan.wake_up_time_weekday, size_hint=(0.3, 0.1))
+        self.time_picker_wake_up_time_weekdays = TimePicker(time=self.plan.wake_up_time_weekday, size_hint=(0.3, 1))
         wake_up_time_weekdays_box.add_widget(self.time_picker_wake_up_time_weekdays)
 
         time_box.add_widget(wake_up_time_weekdays_box)
@@ -176,7 +176,7 @@ class Setup(FloatLayout):
         wake_up_time_weekends_label = Label(text="Weekends:", size_hint=(0.5, 1))
         wake_up_time_weekends_box.add_widget(wake_up_time_weekends_label)
 
-        self.time_picker_wake_up_time_weekends = TimePicker(time=self.plan.wake_up_time_weekend, size_hint=(0.3, 0.1))
+        self.time_picker_wake_up_time_weekends = TimePicker(time=self.plan.wake_up_time_weekend, size_hint=(0.3, 1))
         wake_up_time_weekends_box.add_widget(self.time_picker_wake_up_time_weekends)
 
         time_box.add_widget(wake_up_time_weekends_box)
@@ -194,7 +194,7 @@ class Setup(FloatLayout):
         bed_time_weekdays_label = Label(text="Weekdays:", size_hint=(0.5, 1))
         bed_time_weekdays_box.add_widget(bed_time_weekdays_label)
 
-        self.time_picker_bed_time_weekdays = TimePicker(time=self.plan.bedtime_weekday, size_hint=(0.3, 0.1))
+        self.time_picker_bed_time_weekdays = TimePicker(time=self.plan.bedtime_weekday, size_hint=(0.3, 1))
         bed_time_weekdays_box.add_widget(self.time_picker_bed_time_weekdays)
 
         time_box.add_widget(bed_time_weekdays_box)
@@ -204,7 +204,7 @@ class Setup(FloatLayout):
         bed_time_weekends_label = Label(text="Weekends:", size_hint=(0.5, 1))
         bed_time_weekends_box.add_widget(bed_time_weekends_label)
 
-        self.time_picker_bed_time_weekends = TimePicker(self.plan.bedtime_weekend, size_hint=(0.3, 0.1))
+        self.time_picker_bed_time_weekends = TimePicker(self.plan.bedtime_weekend, size_hint=(0.3, 1))
         bed_time_weekends_box.add_widget(self.time_picker_bed_time_weekends)
 
         time_box.add_widget(bed_time_weekends_box)
@@ -285,7 +285,7 @@ class MainWindow(FloatLayout):
         self.add_widget(setup_btn)
 
         # Center container for main_btn and next_snus_label
-        center_box = BoxLayout(orientation='vertical', spacing=20, size_hint=(0.5, 0.2), pos_hint={'center_x': 0.5, 'center_y': 0.5})
+        center_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(0.5, 0.2), pos_hint={'center_x': 0.5, 'center_y': 0.5})
         self.main_btn = Button(text="SNUS", on_release=self.push_main_btn, size_hint=(1, 0.95))
         center_box.add_widget(self.main_btn)
 
