@@ -14,6 +14,7 @@ from kivy.uix.progressbar import ProgressBar
 
 from Plan import Plan, Day
 from datetime import datetime, date
+import copy
 
 
 # Set the desired window size
@@ -287,7 +288,7 @@ class MainWindow(FloatLayout):
         self.add_widget(setup_btn)
 
         # Center container for main_btn and next_snus_label
-        center_box = BoxLayout(orientation='vertical', spacing=40, size_hint=(0.5, 0.2), pos_hint={'center_x': 0.5, 'center_y': 0.7})
+        center_box = BoxLayout(orientation='vertical', spacing=40, size_hint=(0.5, 0.2), pos_hint={'center_x': 0.5, 'center_y': 0.5})
         self.main_btn = Button(text="SNUS", on_release=self.push_main_btn, size_hint=(1, 0.95))
         center_box.add_widget(self.main_btn)
 
@@ -304,16 +305,18 @@ class MainWindow(FloatLayout):
         self.add_widget(center_box)
 
         # Daily plan
-        daily_plan_vertical_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(1, 0.25), pos_hint={'center_x': 0.5, 'center_y': 0.325})
-        daily_plan_horizontal_box = BoxLayout(orientation='horizontal', spacing=0, size_hint=(None, 1), pos_hint={'center_x': 0.1})
+        '''daily_plan_vertical_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(1, 0.25), pos_hint={'center_x': 0.5, 'center_y': 0.325})
+        daily_plan_horizontal_box = BoxLayout(orientation='horizontal', spacing=0, size_hint=(1, 1), pos_hint={'center_x': 0.5})
         i = 0
 
-        for current_time in self.plan.get_daily_plan():
+        plan = copy.deepcopy(self.plan.get_daily_plan())
+        plan.reverse()
+        for current_time in plan:
             if i % 5 == 0 and i != 0:  # Make sure you don't add an empty box at the start
                 daily_plan_vertical_box.add_widget(daily_plan_horizontal_box)
-                daily_plan_horizontal_box = BoxLayout(orientation='horizontal', size_hint=(None, 1), pos_hint={'center_x': 0.1})
+                daily_plan_horizontal_box = BoxLayout(orientation='horizontal', size_hint=(1, 1), pos_hint={'center_x': 0.5})
 
-            time_label = Label(text=f"{current_time.strftime('%H:%M')}", size_hint=(None, 0.2))
+            time_label = Label(text=f"{current_time.strftime('%H:%M')}", size_hint=(1, 0.2))
             if self.is_passed(current_time):
                 time_label.color = (0, 1, 0, 1)
             else:
@@ -323,7 +326,7 @@ class MainWindow(FloatLayout):
 
         # Add the last horizontal box
         daily_plan_vertical_box.add_widget(daily_plan_horizontal_box)
-        self.add_widget(daily_plan_vertical_box)
+        self.add_widget(daily_plan_vertical_box)'''
 
         # Progress bar
         self.progress = ProgressBar(max=100, size_hint=(0.8, 0.15), pos_hint={'center_x': 0.5, 'y': 0})
