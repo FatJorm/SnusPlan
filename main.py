@@ -52,7 +52,7 @@ class DosePicker(BoxLayout):
             values=[str(i) for i in range(1, 25)],  # This generates values from '1' to '24'
             size_hint=(0.5, 1),
             option_cls=Factory.get('SpinnerOption'),
-            height=item_height * 5
+            height=item_height * 10
         )
         self.doses.bind(text=self.on_dose_text)
 
@@ -79,7 +79,7 @@ class TimePicker(BoxLayout):
         self.spacing = 10
 
         # Assuming each item should be 44 pixels high to show 5 items within 220 pixels
-        item_height = 5
+        item_height = 10
 
         self.hours = CustomSpinner(
             text=str(self.time.hour),
@@ -138,15 +138,15 @@ class Setup(FloatLayout):
         settings_box = AnchorLayout(anchor_x='center', anchor_y='top', size_hint=(0.8, 0.8), pos_hint={'top': 1})
 
         # Entries box
-        entries_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(1, 0.6), pos_hint={'top': 1})
+        entries_box = BoxLayout(orientation='vertical', spacing=60, size_hint=(0.8, 0.6), pos_hint={'top': 1})
 
         # Daily Dose
-        daily_dose_box = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), pos_hint={'top': 1})
+        daily_dose_box = BoxLayout(orientation='horizontal', size_hint=(1, 0.2), pos_hint={'top': 1})
 
-        self.dose_label = Label(text="Current daily dose:", size_hint=(0.15, 0.1))
+        self.dose_label = Label(text="Current daily dose:", size_hint=(0.6, 1))
         daily_dose_box.add_widget(self.dose_label)
 
-        self.dose_picker = DosePicker(dose=self.plan.start_dose, size_hint=(0.05, 0.1))
+        self.dose_picker = DosePicker(dose=self.plan.start_dose, size_hint=(0.2, 1))
         daily_dose_box.add_widget(self.dose_picker)
 
         entries_box.add_widget(daily_dose_box)
