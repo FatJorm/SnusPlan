@@ -46,7 +46,7 @@ class Day:
     def get_plan(self):
         daily_plan = []
         snus_time = self.wake_up_time
-        day_in_min = (self.bed_time.hour - self.wake_up_time.hour) * 60 + (self.bed_time.minute - self.wake_up_time.minute)
+        day_in_min = self.get_snus_day_in_min()
         daily_plan.append(snus_time)
         if self.dose > 1:
             min_between_snus = int(day_in_min/(self.dose-1))
@@ -55,6 +55,15 @@ class Day:
                 daily_plan.append(snus_time)
         daily_plan.reverse()
         return self.remove_passed(daily_plan)
+
+    def get_snus_day_in_min(self):
+        day_in_min = (self.bed_time.hour - self.wake_up_time.hour) * 60 + (self.bed_time.minute - self.wake_up_time.minute)
+        if self.dose > 1:
+            return int(day_in_min - (day_in_min/self.dose) * 0.5)
+        else:
+            return day_in_min
+
+
 
     def is_done(self):
         return False if self.plan else True
@@ -80,14 +89,23 @@ class Day:
 class Plan:
     def __init__(self):
         self._plan_file = "plan.pkl"
-        self._time_file = "time.pkl"
+        self._settings_file = "settings.pkl"
         self._start_date = date.today()
         self.start_dose = 12
         self.wake_up_time_weekday = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=7, minute=0)
         self.wake_up_time_weekend = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=8, minute=0)
         self.bedtime_weekday = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=21, minute=0)
         self.bedtime_weekend = datetime(year=self._start_date.year, month=self._start_date.month, day=self._start_date.day, hour=22, minute=0)
+        self.initial_days_in_plan = 0
         self._plan = []
+        self._load()
+
+
+    def _load(self):
+        if(os.path.isfile(self._plan_file)):
+            self._load_plan()
+        if(os.path.isfile(self._settings_file)):
+            self._load_settings()
 
     def get_current_wake_up_time_weekday(self):
         return self.wake_up_time_weekday.hour
@@ -143,10 +161,6 @@ class Plan:
             self.start_dose = current_day.dose
             self._plan = self._create_plan()
 
-    def _get_time(self):
-        if os.path.isfile(self._time_file):
-            self.wake_up_time_weekday, self.wake_up_time_weekend, self.bedtime_weekday, self.bedtime_weekend = self._load_time()
-
     def _get_master_plan(self):
         if os.path.isfile(self._plan_file):
             return self._load_plan()
@@ -175,9 +189,13 @@ class Plan:
                     else:
                         days_left_on_dose = self._get_days_left_on_dose(current_dose)
         new_plan.reverse()
+        self.initial_days_in_plan = len(new_plan)
         self._save_plan(new_plan)
-        self._save_time()
+        self._save_settings()
         return new_plan
+
+    def get_current_day(self):
+        return self.initial_days_in_plan - len(self._plan)
 
     @staticmethod
     def _get_days_left_on_dose(current_dose):
@@ -212,17 +230,22 @@ class Plan:
     def _load_plan(self):
         if os.path.isfile(self._plan_file):
             with open(self._plan_file, 'rb') as f:
-                return pickle.load(f)
+                self._plan = pickle.load(f)
 
-    def _save_time(self):
-        time = [self.wake_up_time_weekday, self.wake_up_time_weekend, self.bedtime_weekday, self.bedtime_weekend]
-        with open(self._time_file, 'wb') as f:
-            pickle.dump(time, f)
+    def _save_settings(self):
+        settings = {"time": [self.wake_up_time_weekday, self.wake_up_time_weekend, self.bedtime_weekday, self.bedtime_weekend],
+                    "dose": self.start_dose,
+                    "initial_days": self.initial_days_in_plan}
+        with open(self._settings_file, 'wb') as f:
+            pickle.dump(settings, f)
 
-    def _load_time(self):
-        if os.path.isfile(self._time_file):
-            with open(self._time_file, 'rb') as f:
-                return pickle.load(f)
+    def _load_settings(self):
+        if os.path.isfile(self._settings_file):
+            with open(self._settings_file, 'rb') as f:
+                settings = pickle.load(f)
+                self.wake_up_time_weekday, self.wake_up_time_weekend, self.bedtime_weekday, self.bedtime_weekend = settings["time"]
+                self.start_dose = settings["dose"]
+                self.initial_days_in_plan = settings["initial_days"]
 
     def __str__(self):
         str = "["
@@ -237,7 +260,8 @@ if __name__ == '__main__':
     bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=19, minute=0)
     wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=7, minute=0)
 
-    plan = Plan(start_date, dose, wake_up_time, wake_up_time, bedtime, bedtime)
+    plan = Plan()
+    plan.update(dose, wake_up_time, wake_up_time, bedtime, bedtime)
     print(plan)
     bedtime = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=21, minute=0)
     wake_up_time = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=9, minute=0)
