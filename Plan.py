@@ -122,7 +122,7 @@ class Plan:
         self.initial_days_in_plan = 0
         self._plan = []
         self._load()
-        if self.is_done:
+        if self.day_is_done():
             self.new_day()
 
     def get_daily_plan(self):
@@ -146,8 +146,14 @@ class Plan:
         self._plan = []
 
 
+    def day_is_done(self):
+        if not self.plan_is_done():
+            return True if self._plan[-1].is_done() else False
+        return True
+
+
     def new_day(self):
-        if self._plan:
+        if not self.plan_is_done():
             self._plan.pop()
 
     def _load(self):
@@ -162,18 +168,18 @@ class Plan:
     def take_one(self):
         if self._plan:
             self._plan[-1].take_one()
-            if self._plan[-1].is_done():
+            if self._plan[-1].plan_is_done():
                 self._plan.pop()
             self._save_plan(self._plan)
 
     def get_next_time_string(self):
-        if self.is_done():
+        if self.plan_is_done():
             return "--:--"
         else:
             return self._plan[-1].get_next_string()
 
     def get_next_time(self):
-        if self.is_done():
+        if self.plan_is_done():
             return None
         else:
             return self._plan[-1].get_next()
@@ -190,7 +196,7 @@ class Plan:
         else:
             return "--:--:--"
 
-    def is_done(self):
+    def plan_is_done(self):
         return False if self._plan else True
 
     def update(self, dose, wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend):
@@ -215,6 +221,14 @@ class Plan:
             self._plan = new_plan
             self._save_plan(self._plan)
             self._save_settings()
+
+    def plan_to_string(self, plan):
+        str = "["
+        for day in plan:
+            str+=f'{day}, '
+        str = str.strip().strip(',') + ']'
+        return str
+
 
     def _get_master_plan(self):
         if os.path.isfile(self._plan_file):

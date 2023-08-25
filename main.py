@@ -18,8 +18,8 @@ import copy
 
 
 # Set the desired window size
-scale = 0.5
-Window.size = (700*scale, 1280*scale)  # <-- For example, this sets the window size to 500x700 pixels.
+#scale = 0.5
+#Window.size = (700*scale, 1280*scale)  # <-- For example, this sets the window size to 500x700 pixels.
 
 
 class CustomSpinnerOption(SpinnerOption):
@@ -228,7 +228,7 @@ class Setup(FloatLayout):
         back_btn = Button(text="Back", on_release=self.back_btn_clicked, size_hint=(0.3, 1), pos_hint={'left': 1, 'y': 0}, background_color=(32/255,32/255,32/255,1))
         reset_btn = Button(color=(1, 0, 0, 1), text="Reset", on_release=self.reset_btn_clicked, size_hint=(0.3, 1), pos_hint={'center_x': 0.5, 'y': 0}, background_color=(32/255,32/255,32/255,1))
         self.ok_btn = Button(text="OK", on_release=self.push_btn, size_hint=(0.3, 1), pos_hint={'right': 1, 'y': 0}, background_color=(32/255,32/255,32/255,1))
-        if not self.plan.is_done():
+        if not self.plan.plan_is_done():
             self.ok_btn.disabled = True
 
         btn_layout.add_widget(back_btn)
@@ -245,7 +245,7 @@ class Setup(FloatLayout):
         self.main_app.setup_window()
 
     def update_time(self, instance):
-        start_date = datetime.today()
+        start_date = self.plan._plan[-1].date
         wake_up_time_weekdays_hour, wake_up_time_weekdays_minute = self.time_picker_wake_up_time_weekdays.get_time()
         wake_up_time_weekends_hour, wake_up_time_weekends_minute = self.time_picker_wake_up_time_weekends.get_time()
         bed_time_weekdays_hour, bed_time_weekdays_minute = self.time_picker_bed_time_weekdays.get_time()
@@ -268,7 +268,7 @@ class Setup(FloatLayout):
         bed_time_weekday = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekdays_hour, minute=bed_time_weekdays_minute)
         bed_time_weekend = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekends_hour, minute=bed_time_weekends_minute)
         self.plan.update(self.dose_picker.get_dose(), wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend)
-        if self.plan.is_done:
+        if self.plan.plan_is_done:
             self.plan.new_day()
         self.main_app.root_window()
 
@@ -348,7 +348,7 @@ class MainWindow(FloatLayout):
 
     def time_for_next(self):
         now = datetime.now()
-        if not self.plan.is_done():
+        if not self.plan.plan_is_done():
             next_time = self.plan.get_next_time()
             if next_time and now > next_time:
                 return True
