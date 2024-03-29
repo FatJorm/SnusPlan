@@ -166,10 +166,9 @@ class Plan:
         return self.wake_up_time_weekday.hour
 
     def take_one(self):
-        if self._plan:
-            self._plan[-1].take_one()
-            if self._plan[-1].plan_is_done():
-                self._plan.pop()
+        self._plan[-1].take_one()
+        if self.day_is_done():
+            self._plan.pop()
             self._save_plan(self._plan)
 
     def get_next_time_string(self):

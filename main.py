@@ -268,7 +268,7 @@ class Setup(FloatLayout):
         bed_time_weekday = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekdays_hour, minute=bed_time_weekdays_minute)
         bed_time_weekend = datetime(year=start_date.year, month=start_date.month, day=start_date.day, hour=bed_time_weekends_hour, minute=bed_time_weekends_minute)
         self.plan.update(self.dose_picker.get_dose(), wake_up_time_weekday, wake_up_time_weekend, bed_time_weekday, bed_time_weekend)
-        if self.plan.plan_is_done:
+        if self.plan.day_is_done():
             self.plan.new_day()
         self.main_app.root_window()
 
