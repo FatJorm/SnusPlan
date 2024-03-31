@@ -12,8 +12,8 @@ from datetime import datetime, date
 
 
 # Set the desired window size
-scale = 0.5
-Window.size = (700*scale, 1280*scale)  # <-- For example, this sets the window size to 500x700 pixels.
+#scale = 0.5
+#Window.size = (700*scale, 1280*scale)  # <-- For example, this sets the window size to 500x700 pixels.
 
 
 class MainWindow(FloatLayout):
