@@ -29,7 +29,7 @@ class MainWindow(FloatLayout):
         self.add_widget(center_box)
 
        # Adjustments box in the upper right corner
-        adjustments_box = BoxLayout(orientation='horizontal', spacing=10, size_hint=(None, None), size=(200, 50), pos_hint={'right': 1, 'top': 1})
+        adjustments_box = BoxLayout(orientation='horizontal', spacing=10, size_hint=(None, None), size=(200, 50), pos_hint={'right': 0.95, 'top': 0.95})
         self.dec_btn = Button(text="-", on_release=self.decrease_value,
                               background_normal='', background_color=(0, 0, 0, 1),
                               color=(1, 1, 1, 1))  # White text
@@ -62,14 +62,20 @@ class MainWindow(FloatLayout):
         # Increase the value and update the label
         self.main_app.plan.dose += 1  # Assuming `current_dose` is an integer
         self.value_label.text = str(self.main_app.plan.dose)
+        self.main_app.plan.date = datetime.now()
+        self.main_app.plan.update_plan()
         self._save_state(self.main_app.plan)
+        self.main_app.root_window()
 
     def decrease_value(self, instance):
         # Decrease the value and update the label, ensuring it doesn't go below a minimum value (e.g., 0)
         if self.main_app.plan.dose > 0:
             self.main_app.plan.dose -= 1
         self.value_label.text = str(self.main_app.plan.dose)
+        self.main_app.plan.date = datetime.now()
+        self.main_app.plan.update_plan()
         self._save_state(self.main_app.plan)
+        self.main_app.root_window()
 
     def _save_state(self, day_plan):
         with open(self.main_app.state_storage, 'wb') as f:
@@ -105,7 +111,7 @@ class MainWindow(FloatLayout):
 
     @staticmethod
     def is_passed(time):
-        if time < datetime.now():
+        if time.time < datetime.now():
             return True
         else:
             return False
@@ -121,13 +127,14 @@ class SnusManagerApp(App):
         if self.state_storage.exists():
             return self._load_plan()
         else:
-            return DayPlan(date.today(), 5)
+            return DayPlan(datetime.now(), 5)
 
     def _load_plan(self):
         with open(self.state_storage, 'rb') as f:
             plan = pickle.load(f)
         if plan.date < datetime.now():
             plan.date = datetime.now()
+            plan.update_plan()
         return plan
 
     def build(self):

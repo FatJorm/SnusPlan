@@ -60,7 +60,17 @@ class DayPlan:
                 snus_time = snus_time.next(delta_min)
                 plan.append(snus_time)
         plan.reverse()
+        plan = self._remove_passed(plan)
         return plan
+
+    @staticmethod
+    def _remove_passed(daily_plan):
+        out_l = []
+        now = datetime.now()
+        for time in daily_plan:
+            if time.time > now:
+                out_l.append(time)
+        return out_l
 
     def next_day(self):
         self._plan_date = datetime.now() + timedelta(days=1)
@@ -76,6 +86,8 @@ class DayPlan:
     @date.setter
     def date(self, plan_date):
         self._plan_date = plan_date
+
+    def update_plan(self):
         self._day_plan = self._get_day_plan()
 
     @property
