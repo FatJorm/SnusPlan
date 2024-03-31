@@ -4,7 +4,6 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
-from kivy.core.window import Window
 from Plan import DayPlan
 from pathlib import Path
 import pickle
@@ -12,6 +11,7 @@ from datetime import datetime, date
 
 
 # Set the desired window size
+from kivy.core.window import Window
 #scale = 0.5
 #Window.size = (700*scale, 1280*scale)  # <-- For example, this sets the window size to 500x700 pixels.
 

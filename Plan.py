@@ -1,6 +1,4 @@
-from datetime import date, datetime, timedelta
-import os
-import pickle
+from datetime import datetime, timedelta
 
 
 class SnusTime:
