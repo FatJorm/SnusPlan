@@ -132,9 +132,6 @@ class SnusManagerApp(App):
     def _load_plan(self):
         with open(self.state_storage, 'rb') as f:
             plan = pickle.load(f)
-        if plan.date < datetime.now():
-            plan.date = datetime.now()
-            plan.update_plan()
         return plan
 
     def build(self):
