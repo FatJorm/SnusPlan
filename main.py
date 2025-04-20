@@ -4,10 +4,9 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
-from Plan import DayPlan
+from Generator import Snuff
 from pathlib import Path
-import pickle
-from datetime import datetime, date
+from datetime import datetime
 
 
 # Set the desired window size
@@ -28,6 +27,21 @@ class MainWindow(FloatLayout):
         center_box.add_widget(self.main_btn)
         self.add_widget(center_box)
 
+        # New Day Button
+        new_day_box = BoxLayout(orientation='horizontal', spacing=10, size_hint=(None, None), size=(200, 50), pos_hint={'left': 0.5, 'top': 0.95})
+        self.new_day_btn = Button(text="Reset",
+                                  on_release=self.push_new_day_btn,
+                                  size_hint=(1, 0.95),
+                                  background_normal='',
+                                  background_color=(0, 0, 0, 1),
+                                  color=(1, 1, 1, 0.5)
+        )
+
+        new_day_box.add_widget(self.new_day_btn)
+
+        self.add_widget(new_day_box)
+
+
        # Adjustments box in the upper right corner
         adjustments_box = BoxLayout(orientation='horizontal', spacing=10, size_hint=(None, None), size=(200, 50), pos_hint={'right': 0.95, 'top': 0.95})
         self.dec_btn = Button(text="-", on_release=self.decrease_value,
@@ -46,7 +60,7 @@ class MainWindow(FloatLayout):
 
         # Configuration for the next_snus_label remains the same
         self.next_snus_label = Label(
-                                    text=f"Next snus: {self.plan.next.time_string}",
+                                    text=f"Next snus: {self.plan.last.strftime("%d/%m %H:%M")}",
                                     color=(0, 1, 0, 1),
                                     size_hint=(1, 0.05),
                                     halign='center',
@@ -62,9 +76,6 @@ class MainWindow(FloatLayout):
         # Increase the value and update the label
         self.main_app.plan.dose += 1  # Assuming `current_dose` is an integer
         self.value_label.text = str(self.main_app.plan.dose)
-        self.main_app.plan.date = datetime.now()
-        self.main_app.plan.update_plan()
-        self._save_state(self.main_app.plan)
         self.main_app.root_window()
 
     def decrease_value(self, instance):
@@ -72,14 +83,7 @@ class MainWindow(FloatLayout):
         if self.main_app.plan.dose > 0:
             self.main_app.plan.dose -= 1
         self.value_label.text = str(self.main_app.plan.dose)
-        self.main_app.plan.date = datetime.now()
-        self.main_app.plan.update_plan()
-        self._save_state(self.main_app.plan)
         self.main_app.root_window()
-
-    def _save_state(self, day_plan):
-        with open(self.main_app.state_storage, 'wb') as f:
-            pickle.dump(day_plan, f)
 
     def update_main_button(self, *args):
         if self.time_for_next():
@@ -93,45 +97,30 @@ class MainWindow(FloatLayout):
 
     def time_for_next(self):
         now = datetime.now()
-        if not self.plan.done:
-            next_time = self.plan.next.time
-            if next_time and now > next_time:
-                return True
-            else:
-                return False
-        else:
-            return False
-
-    def push_main_btn(self, instance):
-        self.plan.pop()
-        if self.plan.done:
-            self.plan.next_day()
-        self._save_state(self.main_app.plan)
-        self.main_app.root_window()
-
-    @staticmethod
-    def is_passed(time):
-        if time.time < datetime.now():
+        if now > self.plan.last:
             return True
         else:
             return False
 
+    def push_main_btn(self, instance):
+        self.plan.next
+        self.main_app.root_window()
+
+    def push_new_day_btn(self, instance):
+        self.plan.new_day()
+        self.main_app.root_window()
 
 class SnusManagerApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.state_storage = Path(r"state_storage.pkl")
-        self.plan = self._get_day_plan()
+        self.state_storage = Path(r"day.pkl")
+        self.plan = Snuff()
+        self.plan.dose = 5
 
-    def _get_day_plan(self):
-        if self.state_storage.exists():
-            return self._load_plan()
-        else:
-            return DayPlan(datetime.now(), 5)
-
-    def _load_plan(self):
-        with open(self.state_storage, 'rb') as f:
-            plan = pickle.load(f)
+    @staticmethod
+    def _get_day_plan():
+        plan = Snuff()
+        plan.dose = 5
         return plan
 
     def build(self):
