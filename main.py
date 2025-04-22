@@ -7,6 +7,7 @@ from kivy.uix.floatlayout import FloatLayout
 from Generator import Snuff
 from pathlib import Path
 from datetime import datetime
+import pickle
 
 
 # Set the desired window size
@@ -18,6 +19,7 @@ from kivy.core.window import Window
 class MainWindow(FloatLayout):
     def __init__(self, main_app, **kwargs):
         super().__init__(**kwargs)
+        self.state_storage = Path(r"day.pkl")
         self.main_app = main_app
         self.plan = main_app.plan
 
@@ -76,6 +78,7 @@ class MainWindow(FloatLayout):
         # Increase the value and update the label
         self.main_app.plan.dose += 1  # Assuming `current_dose` is an integer
         self.value_label.text = str(self.main_app.plan.dose)
+        self.dump()
         self.main_app.root_window()
 
     def decrease_value(self, instance):
@@ -83,6 +86,7 @@ class MainWindow(FloatLayout):
         if self.main_app.plan.dose > 0:
             self.main_app.plan.dose -= 1
         self.value_label.text = str(self.main_app.plan.dose)
+        self.dump()
         self.main_app.root_window()
 
     def update_main_button(self, *args):
@@ -104,24 +108,38 @@ class MainWindow(FloatLayout):
 
     def push_main_btn(self, instance):
         self.plan.next
+        self.dump()
         self.main_app.root_window()
 
     def push_new_day_btn(self, instance):
         self.plan.new_day()
+        self.dump()
         self.main_app.root_window()
+
+    def dump(self):
+        dump = {'time': self.plan.last, 'dose': self.plan.dose}
+        with open(self.state_storage, 'wb') as f:
+            pickle.dump(dump, f)
+
 
 class SnusManagerApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.state_storage = Path(r"day.pkl")
-        self.plan = Snuff()
-        self.plan.dose = 5
+        self.plan = self._get_day_plan()
 
-    @staticmethod
-    def _get_day_plan():
-        plan = Snuff()
-        plan.dose = 5
+    def _get_day_plan(self):
+        if self.state_storage.exists():
+            dose, time = self.load()
+            plan = Snuff(dose, time)
+        else:
+            plan = Snuff(5, datetime.now())
         return plan
+
+    def load(self):
+        with open(self.state_storage, 'rb') as f:
+            dump = pickle.load(f)
+        return dump['dose'], dump['time']
 
     def build(self):
         self.title = 'Snus Manager'

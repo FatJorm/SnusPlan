@@ -4,9 +4,9 @@ from itertools import count
 
 
 class Snuff:
-    def __init__(self):
-        self._dose = None
-        self._last = None
+    def __init__(self, dose, last):
+        self._dose = dose
+        self._last = last
         self._plan = self._get_plan()
 
     @property
@@ -23,6 +23,10 @@ class Snuff:
             self._last = self.next
         return self._last
 
+    @last.setter
+    def last(self, time):
+        self._last = time
+
     @property
     def delta(self):
         hours_per_day = 16
@@ -32,9 +36,6 @@ class Snuff:
 
     @property
     def next(self):
-        if not self._last:
-            self._last = datetime.now()
-            self._plan = self._get_plan()
         self._last = next(self.plan)
         return self._last
 
@@ -46,4 +47,4 @@ class Snuff:
         return (self._last + self.delta for _ in count(1))
 
     def new_day(self):
-        self._last = None
+        self._last = datetime.now()
