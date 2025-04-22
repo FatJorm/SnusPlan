@@ -60,7 +60,7 @@ class MainWindow(FloatLayout):
 
         # Configuration for the next_snus_label remains the same
         self.next_snus_label = Label(
-                                    text=f"Next snus: {self.plan.last.strftime("%d/%m %H:%M")}",
+                                    text=f"Next snus: {self.plan.last.strftime('%d/%m %H:%M')}",
                                     color=(0, 1, 0, 1),
                                     size_hint=(1, 0.05),
                                     halign='center',
