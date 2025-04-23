@@ -19,7 +19,6 @@ from kivy.core.window import Window
 class MainWindow(FloatLayout):
     def __init__(self, main_app, **kwargs):
         super().__init__(**kwargs)
-        self.state_storage = Path(r"day.pkl")
         self.main_app = main_app
         self.plan = main_app.plan
 
@@ -31,12 +30,12 @@ class MainWindow(FloatLayout):
 
         # New Day Button
         new_day_box = BoxLayout(orientation='horizontal', spacing=10, size_hint=(None, None), size=(200, 50), pos_hint={'left': 0.5, 'top': 0.95})
-        self.new_day_btn = Button(text="Reset",
+        self.new_day_btn = Button(text="New Day",
                                   on_release=self.push_new_day_btn,
                                   size_hint=(1, 0.95),
                                   background_normal='',
                                   background_color=(0, 0, 0, 1),
-                                  color=(1, 1, 1, 0.5)
+                                  color=(0, 1, 0, 0.5)
         )
 
         new_day_box.add_widget(self.new_day_btn)
@@ -78,7 +77,6 @@ class MainWindow(FloatLayout):
         # Increase the value and update the label
         self.main_app.plan.dose += 1  # Assuming `current_dose` is an integer
         self.value_label.text = str(self.main_app.plan.dose)
-        self.dump()
         self.main_app.root_window()
 
     def decrease_value(self, instance):
@@ -86,7 +84,6 @@ class MainWindow(FloatLayout):
         if self.main_app.plan.dose > 0:
             self.main_app.plan.dose -= 1
         self.value_label.text = str(self.main_app.plan.dose)
-        self.dump()
         self.main_app.root_window()
 
     def update_main_button(self, *args):
@@ -107,19 +104,12 @@ class MainWindow(FloatLayout):
             return False
 
     def push_main_btn(self, instance):
-        self.plan.next
-        self.dump()
+        self.plan.get_next()
         self.main_app.root_window()
 
     def push_new_day_btn(self, instance):
         self.plan.new_day()
-        self.dump()
         self.main_app.root_window()
-
-    def dump(self):
-        dump = {'time': self.plan.last, 'dose': self.plan.dose}
-        with open(self.state_storage, 'wb') as f:
-            pickle.dump(dump, f)
 
 
 class SnusManagerApp(App):
